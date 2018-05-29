@@ -1,5 +1,7 @@
 <?php
-
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 /**
  * The plugin bootstrap file
  *
@@ -26,9 +28,9 @@
  */
 
 // If this file is called directly, abort.
-if ( ! defined( 'WPINC' ) ) {
-	die;
-}
+// if ( ! defined( 'WPINC' ) ) {
+// 	die;
+// }
 
 /**
  * Currently plugin version.
@@ -37,46 +39,107 @@ if ( ! defined( 'WPINC' ) ) {
  */
 define( 'PLUGIN_NAME_VERSION', '1.0.0' );
 
+define( 'PROD_API_URL', 'http://wsbcknd.trabajando.com/v1.3.5-CL/' );
+define( 'DEV_API_URL', 'http://services.demotbj.com/jobs-v1.4/' );
+define( 'QUERY_PARAMS', serialize([
+			'domainId' => '2566',
+			'country' => 'CL',
+			'client' => 'CLINICADAVILA-CL',
+			'token' => '342a54d0ba20ebe951857712eaf0326a',
+			'api_key' => '1e0178ad6c8b559bb7f054e98aaf97c0'
+		]));
+
 /**
  * The code that runs during plugin activation.
- * This action is documented in includes/class-davila-trabajando-connector-activator.php
  */
 function activate_davila_trabajando_connector() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-davila-trabajando-connector-activator.php';
-	Davila_Trabajando_Connector_Activator::activate();
+	
 }
 
 /**
  * The code that runs during plugin deactivation.
- * This action is documented in includes/class-davila-trabajando-connector-deactivator.php
  */
 function deactivate_davila_trabajando_connector() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-davila-trabajando-connector-deactivator.php';
-	Davila_Trabajando_Connector_Deactivator::deactivate();
+	
 }
 
-register_activation_hook( __FILE__, 'activate_davila_trabajando_connector' );
-register_deactivation_hook( __FILE__, 'deactivate_davila_trabajando_connector' );
+// register_activation_hook( __FILE__, 'activate_davila_trabajando_connector' );
+// register_deactivation_hook( __FILE__, 'deactivate_davila_trabajando_connector' );
 
-/**
- * The core plugin class that is used to define internationalization,
- * admin-specific hooks, and public-facing site hooks.
- */
-require plugin_dir_path( __FILE__ ) . 'includes/class-davila-trabajando-connector.php';
+// 
 
-/**
- * Begins execution of the plugin.
- *
- * Since everything within the plugin is registered via hooks,
- * then kicking off the plugin from this point in the file does
- * not affect the page life cycle.
- *
- * @since    1.0.0
- */
-function run_davila_trabajando_connector() {
-
-	$plugin = new Davila_Trabajando_Connector();
-	$plugin->run();
-
+function create_job($payload) {
+	// http://services.demotbj.com/jobs-v1.4/rest/json/corporate?api_key=1e0178ad6c8b559bb7f054e98aaf97c0
 }
-run_davila_trabajando_connector();
+
+function activate_job($job_id) {
+	return set_job_state($job_id, 'activate');
+}
+
+function deactivate_job($job_id) {
+	return set_job_state($job_id, 'deactivate');
+}
+
+function get_applications($job_id, $from = NULL) {
+	$options = array_merge(unserialize(QUERY_PARAMS), [
+		'jobId' => $job_id,
+		'from' => $from
+	]) ;
+
+	$query = '?' . http_build_query($options);
+	$url = PROD_API_URL . 'rest/Applications/json/forJob' . $query;
+	return rest_get($url);
+}
+
+
+function set_job_state($job_id, $state='activate') {
+	$query_params = unserialize(QUERY_PARAMS);
+	$api_key = $query_params['api_key'];
+	unset($query_params['api_key']);
+
+	$payload = array_merge($query_params, ['jobId' => $job_id]);
+	$url = DEV_API_URL . "rest/json/$state?api_key=$api_key";
+	return rest_post($url, $payload);
+}
+
+function rest_get($url) {
+	//  Initiate curl
+	$ch = curl_init();
+	// Disable SSL verification
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	// Will return the response, if false it print the response
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	// Set the url
+	curl_setopt($ch, CURLOPT_URL, $url);
+	// Execute
+	$result=curl_exec($ch);
+	// Closing
+	curl_close($ch);
+
+	// Will dump a beauty json :3
+	return json_decode($result, true);
+}
+
+function rest_post ($url, $payload) {
+
+	$data_string = json_encode($payload);
+	var_dump($data_string);
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		'Content-Type: application/json',
+		'Content-Length: ' . strlen($data_string))
+	);
+	curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+
+	//execute post
+	$result = curl_exec($ch);
+
+	//close connection
+	curl_close($ch);
+
+	return $result;
+}

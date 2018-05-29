@@ -69,7 +69,14 @@ function deactivate_davila_trabajando_connector() {
 // 
 
 function create_job($payload) {
-	// http://services.demotbj.com/jobs-v1.4/rest/json/corporate?api_key=1e0178ad6c8b559bb7f054e98aaf97c0
+	$query_params = unserialize(QUERY_PARAMS);
+	$api_key = $query_params['api_key'];
+	unset($query_params['api_key']);
+
+	$payload = array_merge($query_params, ['jobId' => $job_id]);
+	$url = DEV_API_URL . "rest/json/corporate?api_key=$api_key";
+	return rest_post($url, $payload);
+
 }
 
 function activate_job($job_id) {

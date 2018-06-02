@@ -68,12 +68,16 @@ function deactivate_davila_trabajando_connector() {
 
 // 
 
-function create_job($payload) {
+function create_job($json_payload) {
+	$payload = json_decode($json_payload);
 	$query_params = unserialize(QUERY_PARAMS);
 	$api_key = $query_params['api_key'];
 	unset($query_params['api_key']);
 
-	$payload = array_merge($query_params, ['jobId' => $job_id]);
+	foreach ($query_params as $key => $value) {
+		$payload->$key = $value;
+	}
+
 	$url = DEV_API_URL . "rest/json/corporate?api_key=$api_key";
 	return rest_post($url, $payload);
 
@@ -130,7 +134,6 @@ function rest_get($url) {
 function rest_post ($url, $payload) {
 
 	$data_string = json_encode($payload);
-	var_dump($data_string);
 	$ch = curl_init($url);
 	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
@@ -150,3 +153,5 @@ function rest_post ($url, $payload) {
 
 	return $result;
 }
+
+

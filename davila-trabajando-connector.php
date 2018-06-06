@@ -118,7 +118,7 @@ function set_job_state($job_id, $state='activate') {
 	unset($query_params['api_key']);
 
 	$payload = array_merge($query_params, ['jobId' => $job_id]);
-	$url = DEV_API_URL . "rest/json/$state?api_key=$api_key";
+	$url = PROD_API_URL . "rest/json/$state?api_key=$api_key";
 	return rest_call($url, $payload, 'PUT');
 }
 

@@ -39,7 +39,7 @@ error_reporting(E_ALL);
  */
 define( 'PLUGIN_NAME_VERSION', '1.0.0' );
 
-define( 'PROD_API_URL', 'http://wsbcknd.trabajando.com/v1.3.5-CL/' );
+define( 'PROD_API_URL', 'http://wsbcknd.trabajando.com/jobs-v1.4/' );
 define( 'DEV_API_URL', 'http://services.demotbj.com/jobs-v1.4/' );
 define( 'QUERY_PARAMS', serialize([
 			'domainId' => '2566',
@@ -68,7 +68,7 @@ function deactivate_davila_trabajando_connector() {
 
 // 
 
-function create_job($json_payload) {
+function _set_job_data($json_payload) {
 	$payload = json_decode($json_payload);
 	$query_params = unserialize(QUERY_PARAMS);
 	$api_key = $query_params['api_key'];
@@ -77,10 +77,19 @@ function create_job($json_payload) {
 	foreach ($query_params as $key => $value) {
 		$payload->$key = $value;
 	}
+	return $payload;
+}
 
-	$url = DEV_API_URL . "rest/json/corporate?api_key=$api_key";
+function create_job($json_payload) {
+	$payload = _set_job_data($json_payload);
+	$url = PROD_API_URL . "rest/json/corporate?api_key=$api_key";
 	return rest_call($url, $payload);
+}
 
+function update_job($json_payload) {
+	$payload = _set_job_data($json_payload);
+	$url = PROD_API_URL . "rest/json/corporate?api_key=$api_key";
+	return rest_call($url, $payload, 'PUT');
 }
 
 function activate_job($job_id) {

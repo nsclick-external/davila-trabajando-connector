@@ -68,7 +68,7 @@ function deactivate_davila_trabajando_connector() {
 
 // 
 
-function _set_job_data($json_payload) {
+function _set_job_data($json_payload, $method=NULL) {
 	$payload = json_decode($json_payload);
 	$query_params = unserialize(QUERY_PARAMS);
 	$api_key = $query_params['api_key'];
@@ -77,19 +77,17 @@ function _set_job_data($json_payload) {
 	foreach ($query_params as $key => $value) {
 		$payload->$key = $value;
 	}
-	return $payload;
+	
+	$url = PROD_API_URL . "rest/json?api_key=$api_key";
+	return rest_call($url, $payload, $method);
 }
 
 function create_job($json_payload) {
-	$payload = _set_job_data($json_payload);
-	$url = PROD_API_URL . "rest/json?api_key=$api_key";
-	return rest_call($url, $payload);
+	return _set_job_data($json_payload);
 }
 
 function update_job($json_payload) {
-	$payload = _set_job_data($json_payload);
-	$url = PROD_API_URL . "rest/json?api_key=$api_key";
-	return rest_call($url, $payload, 'PUT');
+	return _set_job_data($json_payload, 'PUT');
 }
 
 function activate_job($job_id) {

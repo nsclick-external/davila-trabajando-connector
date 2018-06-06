@@ -78,7 +78,7 @@ function _set_job_data($json_payload, $method=NULL) {
 		$payload->$key = $value;
 	}
 	
-	$corporate = ($method == 'PUT') ? '/corporate' : '';
+	$corporate = ($method == NULL) ? '/corporate' : '';
 	$url = PROD_API_URL . "rest/json$corporate?api_key=$api_key";
 	
 	return rest_call($url, $payload, $method);

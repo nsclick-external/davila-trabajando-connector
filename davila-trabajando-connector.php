@@ -79,7 +79,7 @@ function create_job($json_payload) {
 	}
 
 	$url = DEV_API_URL . "rest/json/corporate?api_key=$api_key";
-	return rest_post($url, $payload);
+	return rest_call($url, $payload);
 
 }
 
@@ -110,7 +110,7 @@ function set_job_state($job_id, $state='activate') {
 
 	$payload = array_merge($query_params, ['jobId' => $job_id]);
 	$url = DEV_API_URL . "rest/json/$state?api_key=$api_key";
-	return rest_post($url, $payload);
+	return rest_call($url, $payload, 'PUT');
 }
 
 function rest_get($url) {
@@ -131,11 +131,11 @@ function rest_get($url) {
 	return json_decode($result, true);
 }
 
-function rest_post ($url, $payload) {
+function rest_call ($url, $payload, $method='POST') {
 
 	$data_string = json_encode($payload);
 	$ch = curl_init($url);
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_HTTPHEADER, array(

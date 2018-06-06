@@ -82,13 +82,13 @@ function _set_job_data($json_payload) {
 
 function create_job($json_payload) {
 	$payload = _set_job_data($json_payload);
-	$url = PROD_API_URL . "rest/json/corporate?api_key=$api_key";
+	$url = PROD_API_URL . "rest/json?api_key=$api_key";
 	return rest_call($url, $payload);
 }
 
 function update_job($json_payload) {
 	$payload = _set_job_data($json_payload);
-	$url = PROD_API_URL . "rest/json/corporate?api_key=$api_key";
+	$url = PROD_API_URL . "rest/json?api_key=$api_key";
 	return rest_call($url, $payload, 'PUT');
 }
 
